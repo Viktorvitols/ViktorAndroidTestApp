@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:minWidth="25px"
+    android:minHeight="25px"
+    android:padding="25px"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/linearLayout1">
+    <TextView
+        android:text="Math test"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="200px"
+        android:textSize="100px"
+        android:gravity="center"
+        android:id="@+id/txtName" />
+    <ImageView
+        android:src="@drawable/Logo"
+        android:layout_width="match_parent"
+        android:layout_height="140.7dp"
+        android:padding="50px"
+        android:id="@+id/imgLogo" />
+
+    <TextView
+        android:text="        This is a math test. Choose a category and press start. You will have to answer 10 questions"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="25px"
+        android:id="@+id/txtRules" />
+    <TextView
+        android:text="Choose a category"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="50px"
+        android:id="@+id/textView1" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="50px"
+        android:paddingBottom="100px"
+        android:id="@+id/category" />
+
+    <Button
+        android:text="Start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="100px"
+        android:id="@+id/btnStart" />
+
+
+</LinearLayout>
