@@ -41,7 +41,6 @@ namespace ViktorApp
                            (this, Android.Resource.Layout.SimpleSpinnerDropDownItem, categories);
             spinner.Adapter = adapter;
 
-            string catName = spinner.SelectedItem.ToString();
             //int catIndex = spinner.SelectedItemPosition;
 
             buttonStart.Click += (sender, args) =>
@@ -50,8 +49,9 @@ namespace ViktorApp
                 {
                     try
                     {
-                        Intent intent = new Intent(this, typeof(Quizz));
+                        Intent intent = new Intent(this, typeof(Quizz2));
                         //intent.PutExtra("catIndex", catIndex);
+                        string catName = spinner.SelectedItem.ToString();
                         intent.PutExtra("catName", catName);
                         StartActivity(intent);
                     }

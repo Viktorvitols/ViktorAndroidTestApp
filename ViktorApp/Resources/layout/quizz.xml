@@ -24,7 +24,20 @@
         android:paddingBottom="100px"
         android:gravity="center"
         android:id="@+id/txtQuestion" />
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="50px"
+        android:paddingBottom="100px"
+        android:id="@+id/answer" />
     <Button
+        android:text="Confirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnConfirm" />
+
+
+   <!-- <Button
         android:text=""
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -44,5 +57,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/btnAns4" />
-
+    
+    <Button
+        android:text="Cheat Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnCheat" />
+    -->
 </LinearLayout>

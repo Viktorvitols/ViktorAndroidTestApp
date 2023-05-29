@@ -10,28 +10,46 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Microsoft.Data.Sqlite;
+using Xamarin.Essentials;
+using System.Threading.Tasks;
+using Android.Webkit;
 
 namespace ViktorApp
 {
     [Activity(Label = "Activity1")]
     public class Quizz : Activity
     {
-
         string connectionString;
         string pathToDatabase;
         string appFolder = Android.App.Application.Context.GetExternalFilesDir("").AbsolutePath;
+        int qNumber;
+        //List<string> qList = new List<string>();
+        List<string> answers = new List<string>();
+        List<int> correctAnswers = new List<int>();
+        string currentAnswer;
+        string correctAnswerId;
+        string correctAnswer;
+        string question = "";
+        string answer1 = "";
+        string answer2 = "";
+        string answer3 = "";
+        string answer4 = "";
 
-        TextView txtQuestion;
         TextView txtNumber;
+        TextView txtQuestion;
         Button btnAns1;
         Button btnAns2;
         Button btnAns3;
         Button btnAns4;
+        Button buttonCheat;
+        Spinner spinAnswer;
+        Button buttonConfirm;
 
-       // int qNumber;
+
         List<KeyValuePair<int, string>> questionList = new List<KeyValuePair<int, string>>();
         string catName;
         int catIndex;
+        string score;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -39,27 +57,48 @@ namespace ViktorApp
             catIndex = this.Intent.GetIntExtra("catIndex", 0);
             catName = this.Intent.GetStringExtra("catName");
             SetContentView(Resource.Layout.quizz);
-            Toast.MakeText(this, catName, ToastLength.Short).Show();
-            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
+
+
             txtNumber = FindViewById<TextView>(Resource.Id.txtNumber);
             txtQuestion = FindViewById<TextView>(Resource.Id.txtQuestion);
-            btnAns1 = FindViewById<Button>(Resource.Id.btnAns1);
-            btnAns2 = FindViewById<Button>(Resource.Id.btnAns2);
-            btnAns3 = FindViewById<Button>(Resource.Id.btnAns3);
-            btnAns4 = FindViewById<Button>(Resource.Id.btnAns4);
+            //btnAns1 = FindViewById<Button>(Resource.Id.btnAns1);
+            //btnAns2 = FindViewById<Button>(Resource.Id.btnAns2);
+            //btnAns3 = FindViewById<Button>(Resource.Id.btnAns3);
+            //btnAns4 = FindViewById<Button>(Resource.Id.btnAns4);
+            //buttonCheat = FindViewById<Button>(Resource.Id.btnCheat);
 
+            buttonCheat.Click += (sender, args) =>
+            {
+                if (sender is Button btnCheat)
+                {
+                    Toast.MakeText(this, "Cheater!", ToastLength.Short).Show();
+                    try
+                    {
+                        Intent intent = new Intent(this, typeof(Result));
+                        StartActivity(intent);
+                        Toast.MakeText(this, "Cheater!", ToastLength.Short).Show();
+                    }
+                    catch (Exception ex)
+                    {
+                        Toast.MakeText(this, ex.Message, ToastLength.Short).Show();
+                    }
+                }
+            };
+
+            //Toast.MakeText(this, catName, ToastLength.Short).Show();
             pathToDatabase = Path.Combine(appFolder, "databaseVApp.db");
             connectionString = $"Data Source={pathToDatabase};";
 
             CreateDB();
 
-
             if (System.IO.File.Exists(pathToDatabase))
             {
                 //Toast.MakeText(this, "Database allready exists", ToastLength.Short).Show();
                 GetQuestions("select * from quizz where category=@category", "category", catName);
+                GetCorrectAnswer("select correctAnswer from quizz where id=@id", "id", correctAnswerId);
+                InsertResult("insert into results (result) values (@result)", "result", score);
                 return; 
-            }
+            } else
             using (var source = Resources.OpenRawResource(Resource.Raw.databaseVApp))
             {
                 using (var destination = System.IO.File.Create(pathToDatabase))
@@ -69,56 +108,76 @@ namespace ViktorApp
             }
         }
 
-
-        public void GetQuestions(string SQL, string paramName, string paramValue)
+        // not finished
+        public async void GetQuestions(string SQLgetQuestionSet, string paramName, string paramValue)
         {
+
             try
             {
                 using (var dbConn = new SqliteConnection(connectionString))
                 {
                     dbConn.Open();
-                    using (SqliteCommand cmd = new SqliteCommand(SQL, dbConn))
+                    using (SqliteCommand cmd = new SqliteCommand(SQLgetQuestionSet, dbConn))
                     {
-                        //cmd.ExecuteNonQuery();
                         cmd.Parameters.AddWithValue(paramName, paramValue);
                         using (var reader = cmd.ExecuteReader())
                         {
-                            //while (reader.Read())
-                            //{
+                            //int n = 1;
                             reader.Read();
-                                int qNumber = 0;
-                                string question = "";
-                                string answer1 = "";
-                                string answer2 = "";
-                                string answer3 = "";
-                                string answer4 = "";
+                            while (reader.Read()) 
+                            {
+                                qNumber++;
+                                this.answers.Clear();
+                                this.correctAnswerId = reader.GetString(0);
+                                this.question = reader.GetString(1);
+                                this.answer1 = reader.GetString(2);
+                                this.correctAnswer = reader.GetString(2);
+                                this.answer2 = reader.GetString(3);
+                                this.answer3 = reader.GetString(4);
+                                this.answer4 = reader.GetString(5);
+                                SetContent();
+                                var adapter = new ArrayAdapter<string>
+               (this, Android.Resource.Layout.SimpleSpinnerDropDownItem, answers);
 
-                                var fieldcount = reader.FieldCount;
+                                spinAnswer.Adapter = adapter;
 
-                                for (int i = 0; i < fieldcount; i++)
-                                {                                    
-                                    question = reader[1].ToString();
-                                    answer1 = reader[2].ToString();
-                                    answer2 = reader[3].ToString();
-                                    answer3 = reader[4].ToString();
-                                    answer4 = reader[5].ToString();
-                                }
-
-                                txtQuestion.Text += question;
-                                txtNumber.Text = "Question number: " + qNumber.ToString();
-                                var answers = new List<string>();
-                                answers.Add(answer1);
-                                answers.Add(answer2);
-                                answers.Add(answer3);
-                                answers.Add(answer4);
-                                //Shuffle(answers);
-                                btnAns1.Text = answers[0].ToString();
-                                btnAns2.Text = answers[1].ToString();
-                                btnAns3.Text = answers[2].ToString();
-                                btnAns4.Text = answers[3].ToString();
-                          //  }
+                                buttonConfirm.Click += (sender, args) =>
+                                {
+                                    if (spinAnswer.SelectedItem != null)
+                                    {
+                                        this.currentAnswer = spinAnswer.SelectedItem.ToString();
+                                        CheckAnswer();
+                                    }
+                                };
+                            }
                         }
+                    }
+                    dbConn.Close();
+                }
+            } catch (Exception ex) {
+                Toast.MakeText(this, ex.Message, ToastLength.Long).Show();
+            }
+        }
 
+
+
+        public async void GetCorrectAnswer(string SQLgetQuestionSet, string paramName, string paramValue)
+        {
+
+            try
+            {
+                using (var dbConn = new SqliteConnection(connectionString))
+                {
+                    dbConn.Open();
+                    using (SqliteCommand cmd = new SqliteCommand(SQLgetQuestionSet, dbConn))
+                    {
+                        cmd.Parameters.AddWithValue(paramName, paramValue);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            reader.Read();
+                            this.correctAnswer = reader.ToString();
+                        }
+                        Toast.MakeText(this, correctAnswerId, ToastLength.Long).Show();
 
                     }
                     dbConn.Close();
@@ -129,6 +188,75 @@ namespace ViktorApp
                 Toast.MakeText(this, ex.Message, ToastLength.Long).Show();
             }
         }
+
+
+
+
+        public void SetContent()
+        {
+           
+
+            //question = qList[1].ToString();
+            //this.answer1 = qList[2].ToString();
+            //this.answer2 = qList[3].ToString();
+            //this.answer3 = qList[4].ToString();
+            //this.answer4 = qList[5].ToString();
+
+            this.answers.Add(answer1);
+            this.answers.Add(answer2);
+            this.answers.Add(answer3);
+            this.answers.Add(answer4);
+
+            spinAnswer = FindViewById<Spinner>(Resource.Id.answer);
+            buttonConfirm = FindViewById<Button>(Resource.Id.btnConfirm);
+
+
+
+
+            txtNumber.Text = "Question number: " + qNumber.ToString();
+            txtQuestion.Text = question;
+
+            //btnAns1.Text = answers[0].ToString();
+            //btnAns2.Text = answers[1].ToString();
+            //btnAns3.Text = answers[2].ToString();
+            //btnAns4.Text = answers[3].ToString();
+        }
+
+        public void CheckAnswer() //not finished
+        {
+            if (currentAnswer == correctAnswer)
+            {
+                correctAnswers.Add(1);
+            }else
+            {
+                correctAnswers.Add(0);
+            }
+            //if (correctAnswers.Count = 10) 
+            //{
+            //    InsertResult("score", score);
+            //}
+        }
+
+        public async void InsertResult(string SQLInsertResult, string paramName, string paramValue)
+        {
+            try
+            {
+                using (var dbConn = new SqliteConnection(connectionString))
+                {
+                    dbConn.Open();
+                    using (SqliteCommand cmd = new SqliteCommand(SQLInsertResult, dbConn))
+                    {
+                        cmd.Parameters.AddWithValue(paramName, paramValue);
+                        cmd.ExecuteNonQuery();
+                    }
+                    dbConn.Close();
+                }
+            } catch (Exception ex)
+            {
+                Toast.MakeText(this, ex.Message, ToastLength.Long).Show();
+            }
+        }
+
         private void CreateDB()
         {
             string SQLDB = "CREATE TABLE IF NOT EXISTS quizz (id INTEGER PRIMARY KEY AUTOINCREMENT, question TEXT UNIQUE, correctAnswer TEXT, wrongAnswer1 TEXT, wrongAnswer2 TEXT, wrongAnswer3 TEXT, category TEXT);" +
