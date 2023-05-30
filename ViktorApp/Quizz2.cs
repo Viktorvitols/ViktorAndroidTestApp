@@ -32,9 +32,9 @@ namespace ViktorApp
                 "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x + 10 = 18', '8', '10', '30', '1', 'Addition');" +
                 "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x + 35 = 40', '5', '3', '10', '8', 'Addition');" +
                 "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x + 100 = 310', '210', '300', '10', '211', 'Addition');" +
-                "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x + 7 = 10', '17', '10', '1', '20', 'Addition');" +
-                "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x + 1000 = 1111', '50', '111', '911', '1', 'Addition');" +
-                "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x + 1 = 101', '150', '3', '100', '50', 'Addition');" +
+                "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x + 7 = 10', '3', '10', '1', '17', 'Addition');" +
+                "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x + 1000 = 1111', '111', '50', '911', '1', 'Addition');" +
+                "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x + 1 = 101', '100', '3', '150', '50', 'Addition');" +
                 "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x + 30 = 40', '10', '50', '53', '18', 'Addition');" +
                 "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('55 + x = 60', '5', '15', '1', '18', 'Addition');" +
                 "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('1111 + x = 11111', '10000', '1000', '11111', '1', 'Addition');" +
@@ -47,9 +47,9 @@ namespace ViktorApp
                 "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x - 2000 = 1000', '3000', '1010', '1001', '2000', 'Subtraction');" +
                 "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x - 58 = 8', '64', '68', '58', '50', 'Subtraction');" +
                 "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('x - 0 = 123', '123', '132', '321', '213', 'Subtraction');" +
-                "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES (' 987 - x = 500', '487', '478', '1000', '3', 'Subtraction');" +
+                "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('987 - x = 500', '487', '478', '1000', '3', 'Subtraction');" +
                 "INSERT INTO quizz (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3, category) VALUES ('258 - x = 13', '245', '351', '145', '32', 'Subtraction');";
-        string SQLResTableCreate = "CREATE TABLE results (id INTEGER  PRIMARY KEY AUTOINCREMENT, result TEXT, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)";
+        string SQLResTableCreate = "CREATE TABLE IF NOT EXISTS results (id INTEGER  PRIMARY KEY AUTOINCREMENT, result TEXT, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)";
         string SQLGetQuestions = "select * from quizz where category=@category";
         string SQLInsertResult = "insert into results (result) values (@result)";
         int qNumber;
@@ -72,7 +72,6 @@ namespace ViktorApp
             pathToDatabase = Path.Combine(appFolder, "databaseVApp.db");
             connectionString = $"Data Source={pathToDatabase};";
 
-            CreateDB();
             CreateDB();
             qNumber = 0;
 
@@ -122,36 +121,30 @@ namespace ViktorApp
 
         private void CreateDB()
         {
-            if (File.Exists(pathToDatabase) == false)
+            try
             {
-                try
+                using (var dbConn = new SqliteConnection(connectionString))
                 {
-                    using (var dbConn = new SqliteConnection(connectionString))
+                    dbConn.Open();
+                    using (SqliteCommand cmd = new SqliteCommand(SQLResTableCreate, dbConn))
                     {
-                        dbConn.Open();
-                        using (SqliteCommand cmd = new SqliteCommand(SQLResTableCreate, dbConn))
-                        {
-                            int response = cmd.ExecuteNonQuery();
-                            Toast.MakeText(this, $"{response} rows affected", ToastLength.Short).Show();
-                        }
-                        using (SqliteCommand cmd = new SqliteCommand(SQLQuTableCreate, dbConn))
-                        {
-                            int response = cmd.ExecuteNonQuery();
-                            Toast.MakeText(this, $"{response} rows affected", ToastLength.Short).Show();
-                        }
-
-                        dbConn.Close();
+                        int response = cmd.ExecuteNonQuery();
+                        Toast.MakeText(this, $"{response} rows affected", ToastLength.Short).Show();
                     }
-                }
-                catch (Exception ex)
-                {
-                    Toast.MakeText(this, ex.Message, ToastLength.Short).Show();
+                    using (SqliteCommand cmd = new SqliteCommand(SQLQuTableCreate, dbConn))
+                    {
+                        int response = cmd.ExecuteNonQuery();
+                        Toast.MakeText(this, $"{response} rows affected", ToastLength.Short).Show();
+                    }
+
+                    dbConn.Close();
                 }
             }
-            else
+            catch (Exception ex)
             {
-                //Toast.MakeText(this, "Db allready exists", ToastLength.Short).Show();
+                //Toast.MakeText(this, ex.Message, ToastLength.Short).Show();
             }
+        
         }
 
         public List<QuAns> GetQuestions(string SQLgetQuestionSet, string paramName, string paramValue)
@@ -237,6 +230,7 @@ namespace ViktorApp
                         cmd.ExecuteNonQuery();
                     }
                     dbConn.Close();
+                    Toast.MakeText(this, "Result is saved", ToastLength.Long).Show();
                 }
             }
             catch (Exception ex)
@@ -256,6 +250,7 @@ namespace ViktorApp
             {
                 Intent intent = new Intent(this, typeof(Result));
                 intent.PutExtra("totalScore", totalScore);
+                intent.PutExtra("yourScore", yourScore);
                 StartActivity(intent);
             }
             catch (Exception ex)

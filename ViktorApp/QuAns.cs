@@ -19,6 +19,5 @@ namespace ViktorApp
         public string wrongAnswer1;
         public string wrongAnswer2;
         public string wrongAnswer3;
-
     }
 }

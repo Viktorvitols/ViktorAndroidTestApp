@@ -17,25 +17,21 @@ namespace ViktorApp
     [Activity(Label = "Result")]
     public class Result : Activity
     {
-
-
+        int yourScore;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
 
             string totalScore = this.Intent.GetStringExtra("totalScore");
-            //SetContentView(Resource.Layout.quizz);
+            yourScore = this.Intent.GetIntExtra("yourScore", 0);
             StartMedia();
             SetContentView(Resource.Layout.result);
-
 
             TextView txtResult = FindViewById<TextView>(Resource.Id.txtResult);
             txtResult.Text = totalScore;
             Button btnRestart = FindViewById<Button>(Resource.Id.btnRestart);
             Button btnShare = FindViewById<Button>(Resource.Id.btnShare);
             Button btnQuit = FindViewById<Button>(Resource.Id.btnQuit);
-
-
 
             btnRestart.Click += delegate
             {
@@ -62,14 +58,18 @@ namespace ViktorApp
                     Text = "Check out my score: " + $"{ txtResult.Text}", Title = "Math quizz"
                 });
             };
-
-
         }
         MediaPlayer player;
 
         public bool StartMedia()
         {
-            player = MediaPlayer.Create(this, Resource.Raw.win);
+            if (yourScore > 6)
+            {
+                player = MediaPlayer.Create(this, Resource.Raw.win);
+            } else
+            {
+                player = MediaPlayer.Create(this, Resource.Raw.fail);
+            }
             player.Start();
             return true;
         }
