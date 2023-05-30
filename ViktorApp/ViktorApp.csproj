@@ -65,9 +65,10 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Quizz.cs" />
+    <Compile Include="QuAns.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Quizz2.cs" />
+    <Compile Include="Randomizer.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Result.cs" />

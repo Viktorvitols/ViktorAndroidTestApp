@@ -16,7 +16,7 @@
         android:minHeight="25px"
         android:id="@+id/textView1" />
     <TextView
-        android:text="10/10"
+        android:text=""
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
